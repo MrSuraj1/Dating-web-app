@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feed - LoveConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-rose-100 min-h-screen p-4">
+
+<h1 class="text-3xl font-bold text-center text-rose-600 mb-6">Find Your Match</h1>
+    <!-- Feed container -->
+  <div id="feedContainer" class="object-center grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Profile cards will be injected here -->
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb",
+      measurementId: "G-GGZBH6NR71"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Check user authentication and fetch gender
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Redirect to login page if user is not logged in
+        window.location.href = "login.html";
+        return;
+      }
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      const currentUserGender = userDoc.data().gender;
+
+      // Fetch profiles based on user gender
+      fetchProfiles(currentUserGender);
+    });
+
+    // Fetch profiles from Firestore
+    async function fetchProfiles(currentUserGender) {
+      const usersRef = db.collection('users');
+      const snapshot = await usersRef.get();
+
+      const profiles = snapshot.docs.filter(doc => {
+        const userData = doc.data();
+        // If the logged-in user is male, show female profiles only
+        return (currentUserGender === 'Male' && userData.gender === 'Female') ||
+               (currentUserGender === 'Female' && userData.gender === 'Male');
+      });
+
+      renderProfiles(profiles);
+    }
+
+    // Render profiles on the feed
+    function renderProfiles(profiles) {
+      const feedContainer = document.getElementById("feedContainer");
+      feedContainer.innerHTML = ''; // Clear existing content
+
+      profiles.forEach(doc => {
+        const user = doc.data();
+        const userCard = document.createElement('div');
+        userCard.classList.add('cursor-pointer', 'bg-white', 'shadow-lg', 'rounded-xl', 'p-4');
+
+        userCard.innerHTML = `<center>
+          <img src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="${user.name}" class="object-center w-half h-48 object-cover rounded-xl mb-2" />
+          <h3 class="text-xl font-semibold object-center">${user.name}</h3>
+          <p class="text-gray-600 object-center">${user.gender}, ${user.dob}</p></center>
+        `;
+
+        // Add event listener to navigate to profile detail page
+        userCard.addEventListener('click', () => {
+          window.location.href = `profile.html?uid=${doc.id}`;
+        });
+
+        feedContainer.appendChild(userCard);
+      });
+    }
+  </script>
+</body>
+</html>

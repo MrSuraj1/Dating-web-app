@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - LoveConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-rose-100 flex justify-center items-center min-h-screen">
+
+  <form id="loginForm" class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-4 text-center text-rose-600">Log In</h2>
+
+    <input type="email" id="email" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
+    <input type="password" id="password" placeholder="Password" class="w-full mb-4 p-2 border rounded" required />
+
+    <button type="submit" class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+      Log In
+    </button>
+
+    <p class="mt-4 text-center text-sm text-gray-600">
+      Don't have an account?
+      <a href="signup.html" class="text-rose-500 hover:underline font-semibold">Sign Up</a>
+    </p>
+  </form>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb",
+      measurementId: "G-GGZBH6NR71"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Handle login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        alert("Login successful!");
+        window.location.href = "dashboard.html"; // Redirect to dashboard
+      } catch (error) {
+        console.error("Login error:", error.message);
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

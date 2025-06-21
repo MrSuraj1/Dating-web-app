@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile - LoveConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-rose-100 min-h-screen p-4">
+
+  <div id="profileContainer" class="bg-white shadow-lg rounded-xl p-8">
+    <!-- Profile details will be injected here -->
+    <h3 class="text-3xl font-semibold mb-2">Loading profile...</h3>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb",
+      measurementId: "G-GGZBH6NR71"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Get the UID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');  // uid is passed in the URL, e.g., profile.html?uid=<user_uid>
+
+    // Fetch and display profile details
+    async function fetchProfile(uid) {
+      try {
+        const userDoc = await db.collection('users').doc(uid).get();
+
+        if (!userDoc.exists) {
+          document.getElementById("profileContainer").innerHTML = "<p class='text-red-600'>User not found.</p>";
+          return;
+        }
+
+        const user = userDoc.data();
+
+        const profileContainer = document.getElementById("profileContainer");
+        profileContainer.innerHTML = `<center>
+          <img src="${user.photoURL || 'https://via.placeholder.com/150'}" alt="${user.name}" class=" h-48 object-cover rounded-xl mb-4" />
+          <h3 class="text-3xl font-semibold mb-2">${user.name}</h3><center>
+          <p class="text-xl text-gray-600 mb-2">${user.gender}, ${user.dob}</p>
+          <p class="text-lg text-gray-700 mb-4">Email: ${user.email}</p>
+           <p class="text-lg text-gray-700 mb-4">Mobile: ${user.number}</p>
+            <p class="text-lg text-gray-700 mb-4">Insta: ${user.insta}</p>
+          <button class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+            Start Chat
+          </button>
+        `;
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        document.getElementById("profileContainer").innerHTML = "<p class='text-red-600'>Error loading profile.</p>";
+      }
+    }
+
+    // Call the function to fetch and display the profile
+    if (uid) {
+      fetchProfile(uid);
+    } else {
+      document.getElementById("profileContainer").innerHTML = "<p class='text-red-600'>Profile not found (UID is missing).</p>";
+    }
+  </script>
+</body>
+</html>

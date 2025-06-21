@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-rose-100 flex justify-center items-center min-h-screen">
+
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center text-rose-600">Your Dashboard</h2>
+    <div id="userProfile" class="text-center mt-4">
+      Loading your profile...
+    </div>
+    
+    <!-- Logout Button -->
+    <div class="text-center mt-6">
+      <button id="see" class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+      <a href="feed.html">
+        Find Your Match</a>
+      </button><br style="margin-top: 10px ;"><br>
+      <button id="see" class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+      <a href="rent.html">
+  Rent a Girlfriend
+</a></button><br><br>
+      <button id="logoutBtn" class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+
+        Log Out
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb",
+      measurementId: "G-GGZBH6NR71"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Handle Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = "sinuop.html";  // Redirect to signup after logout
+    });
+
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // Fetch user data from Firestore
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('userProfile').innerHTML = `
+<center>            <img src="${data.photoURL || 'https://via.placeholder.com/100'}" class="rounded-full w-24 h-24 mb-2"/>
+            <p><strong>Name:</strong> ${data.name}</p>
+</cenetr>            <p><strong>Email:</strong> ${data.email}</p>
+            <p><strong>Gender:</strong> ${data.gender}</p>
+            <p><strong>Date of Birth:</strong> ${data.dob}</p>
+          `;
+        }
+      } else {
+        // Redirect to signup if not logged in
+        window.location.href = "sinuop.html";  
+      }
+    });
+  </script>
+</body>
+</html>

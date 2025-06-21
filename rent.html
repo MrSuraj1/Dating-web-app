@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rent a Girlfriend</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-rose-50 min-h-screen p-4">
+  <h1 class="text-3xl font-bold text-center text-rose-600 mb-6">Rent a Girlfriend ($20)</h1>
+  <div id="profiles" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      databaseURL: "https://love-calculator-2b5fa-default-rtdb.firebaseio.com/",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    // Fetch current user and display only female profiles
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        alert("Please login first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const currentUserDoc = await db.collection('users').doc(user.uid).get();
+      const currentUser = currentUserDoc.data();
+
+      if (currentUser.gender !== 'Male') {
+        document.getElementById('profiles').innerHTML = '<p class="text-center text-red-500 font-bold">Only male users can rent girlfriends.</p>';
+        return;
+      }
+
+      const querySnapshot = await db.collection('users').where('gender', '==', 'Female').get();
+      const container = document.getElementById('profiles');
+      container.innerHTML = '';
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement('div');
+        card.className = 'bg-white p-4 rounded shadow text-center';
+
+        card.innerHTML = `
+          <img src="${data.photoURL}" class="w-32 h-32 object-cover rounded-full mx-auto mb-2">
+          <h2 class="text-xl font-semibold">${data.name}</h2>
+          <p>${data.email}</p>
+          <p class="text-rose-500 font-bold mt-2">$20</p>
+          <button onclick='handleRent(${JSON.stringify(data).replace(/'/g, "\\'")})' 
+                  class="bg-rose-500 text-white px-4 py-2 mt-2 rounded hover:bg-rose-600">
+            Rent
+          </button>
+        `;
+
+        container.appendChild(card);
+      });
+    });
+
+    // Handle Rent button click
+    async function handleRent(femaleData) {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You must be logged in.");
+        return;
+      }
+
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      const maleData = userDoc.data();
+
+      const booking = {
+        femaleName: femaleData.name,
+        femaleEmail: femaleData.email,
+        femalePhoto: femaleData.photoURL,
+        maleName: maleData.name,
+        maleEmail: maleData.email,
+        malePhoto: maleData.photoURL,
+        bookedAt: new Date().toISOString(),
+        price: "$20"
+      };
+
+      await rtdb.ref('bookings').push(booking);
+
+      alert("Girlfriend booked successfully!");
+      window.location.href = "booked.html"; // redirect after booking
+    }
+  </script>
+</body>
+</html>

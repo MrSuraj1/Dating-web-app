@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup - LoveConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-rose-100 flex justify-center items-center min-h-screen">
+
+  <form id="signupForm" class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-4 text-center text-rose-600">Create Account</h2>
+
+    <input type="text" id="name" placeholder="Full Name" class="w-full mb-2 p-2 border rounded" required />
+    <input type="email" id="email" placeholder="Email" class="w-full mb-2 p-2 border rounded" required />
+    <input type="password" id="password" placeholder="Password" class="w-full mb-2 p-2 border rounded" required />
+    <input type="number" id="number" placeholder="number" class="w-full mb-2 p-2 border rounded" required />
+    <input type="text" id="insta" placeholder="Instagram id" class="w-full mb-2 p-2 border rounded" required />
+    
+    <input type="date" id="dob" class="w-full mb-2 p-2 border rounded" required />
+    
+    <select id="gender" class="w-full mb-2 p-2 border rounded" required>
+      <option value="" disabled selected>Select Gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <input type="url" id="photoURL" placeholder="Profile Photo URL (optional)" class="w-full mb-4 p-2 border rounded"/>
+
+    <button type="submit" class="w-full bg-rose-500 text-white py-2 rounded hover:bg-rose-600">
+        Sign Up
+      </button>
+  
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Already have an account?
+        <a href="login.html" class="text-rose-500 hover:underline font-semibold">Log In</a>
+      </p></form>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDORwWEfG5kFFcVNnKo3jNEC_et4jv_MIE",
+      authDomain: "love-calculator-2b5fa.firebaseapp.com",
+      projectId: "love-calculator-2b5fa",
+      storageBucket: "love-calculator-2b5fa.appspot.com",
+      messagingSenderId: "1031217234754",
+      appId: "1:1031217234754:web:882a9ee2f456c384547edb",
+      measurementId: "G-GGZBH6NR71"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Handle signup
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+       const phonumber = document.getElementById('number').value;
+      const insta = document.getElementById('insta').value;
+      const dob = document.getElementById('dob').value;
+      const gender = document.getElementById('gender').value;
+     
+      const photoURL = document.getElementById('photoURL').value;
+      
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        await db.collection('users').doc(user.uid).set({
+          name,
+          email,
+          gender,
+          dob,
+          insta,
+          phonumber,
+          photoURL: photoURL || '',
+          uid: user.uid,
+          createdAt: new Date()
+        });
+
+        alert("Signup successful! Data saved to Firestore.");
+        window.location.href = "dashboard.html";
+        // Redirect or clear form
+      } catch (error) {
+        console.error("Signup error:", error.message);
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
